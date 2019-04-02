@@ -12,9 +12,10 @@ float initTime = 2418859.6;
 float endTime = 2458528.94155;
 float min = 1.0;
 float max = 11.8;
-float audioDuration = 3000; //em contagem de frames (verifique o framerate configurado no método setup)
+float startPoint = 0;//usar acima de 0 apenas para gravar a partir de um ponto à frente 
+float audioDuration = 108000; //em contagem de frames (verifique o framerate configurado no método setup)
 int minFreq = 20;
-int maxFreq = 300;
+int maxFreq = 200;
 
 
 float curFreq;
@@ -42,7 +43,7 @@ void setup() {
   
   minim = new Minim(this);
   out = minim.getLineOut();
-  recorder = minim.createRecorder(out, "RScutiGrealidades.wav");
+  recorder = minim.createRecorder(out, "RScuti_1hora.wav");
   
   wave = new Oscil( 4.0f,  1.0f, Waves.SINE );
   wave.patch( out );
@@ -51,23 +52,26 @@ void setup() {
   //wave2.patch( out );
   
   recorder.beginRecord();
+  
+  println("starting record at "+hour()+":"+minute()+":"+second());
 }
 
 void draw() {
   
-  if(frameCount <= audioDuration) {  
-    curMag = interpolator.interpolate(map(frameCount,1,audioDuration,initTime,endTime));
+  if(frameCount+startPoint <= audioDuration) {// - audioDuration*0.1) {  
+    curMag = interpolator.interpolate(map(frameCount+startPoint,1,audioDuration,initTime,endTime));
     //if(frameCount % 10 == 0) {
     //  println(curMag);
     //}
     if (!Float.isNaN(curMag)) {
       curFreq = map(curMag, min, max, minFreq, maxFreq);
       wave.setFrequency(curFreq);
-      wave2.setFrequency(curFreq*2);
+      //wave2.setFrequency(curFreq*10);
     } else {
-      println("error in line " + (frameCount - 1));
+      println("error in line " + (frameCount+startPoint - 1));
     }
   } else {
-    recorder.endRecord();
+    recorder.endRecord(); //<>//
+    exit();
   }
 }
